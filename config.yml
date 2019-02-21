@@ -1,0 +1,9 @@
+# Username to make admin API requests
+admin_username: 'admin'
+
+# Plaintext password to make admin API requests
+# Safe to remove if admin_hashed_password is set
+#admin_password: 'password'
+
+# Hashed password (bcrypt) to make admin API requests - Preferred over plaintext, use securepass.sh to generate
+admin_hashed_password: 'test'

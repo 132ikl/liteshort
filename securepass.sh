@@ -3,7 +3,7 @@
 ## bcrypt passwd generator ##
 #############################
 CMD=$(which htpasswd 2>/dev/null)
-OPTS="-nBC 15"
+OPTS="-nBC 12"
 
 read -p "Username: " USERNAME
 

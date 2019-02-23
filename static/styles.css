@@ -1,0 +1,46 @@
+div.form {
+  margin-top: 5%;
+  text-align: center;
+}
+
+input {
+  margin: auto;
+}
+
+div.success {
+  display: inline-block;
+  font-family: Open Sans;
+  border-radius: 2vh;
+  padding: 2vh;
+  color: #62ad2c;
+  background-color: #E9FFD9;
+  border: 1px solid #62ad2c;
+}
+
+
+div.error {
+  display: inline-block;
+  font-family: Open Sans;
+  border-radius: 2vh;
+  padding: 2vh;
+  color: #a86464;
+  background-color: #FCE9E9;
+  border: 1px solid #a86464;
+}
+
+body {
+  text-align: center
+}
+
+div.success > a:link {
+  color: #62ad2c;
+}
+
+div.success > a:visited {
+  color: #507c52;
+}
+
+h2 {
+  font-weight: normal;
+  font-family: Open Sans;
+}

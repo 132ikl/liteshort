@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ config.site_name }}</title>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">  
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div class="form">
+        <h2>{{ config.site_name }}</h2>
+        <form class="pure-form">
+            <input name="long" type="url" placeholder="Long URL">
+            <p>
+            <input name="short" type="text" placeholder="Custom link (optional)">
+            <p>
+            <button type="submit" class="pure-button pure-button-primary" formmethod="post">Shorten</button>
+        </form>
+    </div>
+    {% if result is defined and result[0] %}
+    <div class="success">
+        ✓ Shortlink successfully generated! Available at  <a href="{{ result[1] }}">{{ result[1] }}</a>
+    </div>
+    {% elif result is defined and not result[0] %}
+    <div class="error">
+        ✖ Shortlink failed to generate! {{ result[1] }}
+    </div>
+    {% endif %}
+</body>
+</html>

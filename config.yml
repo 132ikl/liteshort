@@ -27,3 +27,7 @@ allowed_chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_
 # Amount of time in seconds to spend generating random short URLs until timeout
 # Default: 5
 random_gen_timeout: 5
+
+# Name shown on tab while on site and on page header
+# Default: 'liteshort'
+site_name: 'liteshort'

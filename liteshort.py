@@ -1,4 +1,4 @@
-from flask import Flask, Response, request, current_app, g, send_from_directory
+from flask import Flask, request, current_app, g, render_template
 import bcrypt
 import random
 import sqlite3
@@ -12,11 +12,11 @@ def load_config():
 
     req_options = {'admin_username': 'admin', 'database_name': "urls", 'random_length': 4,
                    'allowed_chars': 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_',
-                   'random_gen_timeout': 5
+                   'random_gen_timeout': 5, 'site_name': 'liteshort'
                    }
 
     config_types = {'admin_username': str, 'database_name': str, 'random_length': int,
-                    'allowed_chars': str, 'random_gen_timeout': int}
+                    'allowed_chars': str, 'random_gen_timeout': int, 'site_name': str}
 
     for option in req_options.keys():
         if option not in new_config.keys():  # Make sure everything in req_options is set in config
@@ -45,19 +45,18 @@ def check_password(password, pass_config):
         raise RuntimeError('This should never occur! Bailing...')
 
 
-def check_short_exist(database, short):
-    database.cursor().execute("SELECT long FROM urls WHERE short = ?", (short,))
-    result = database.cursor().fetchone()
-    if database.cursor().fetchone():
-        return result
+def check_short_exist(short):
+    query = query_db('SELECT long FROM urls WHERE short = ?', (short,))
+    if query:
+        return True
     return False
 
 
-def check_long_exist(database, long):
-    database.cursor().execute("SELECT short FROM urls WHERE long = ?", (long,))
-    result = database.cursor().fetchone()
-    if database.cursor().fetchone():
-        return result
+def check_long_exist(long):
+    query = query_db('SELECT short FROM urls WHERE long = ?', (long,))
+    for i in query:
+        if i and (len(i['short']) <= current_app.config["random_length"]):  # Checks if query if pre-existing URL is same as random length URL
+            return i['short']
     return False
 
 
@@ -77,6 +76,23 @@ def get_db():
     return g.db
 
 
+def query_db(query, args=(), one=False):
+    cur = get_db().execute(query, args)
+    rv = cur.fetchall()
+    cur.close()
+    return (rv[0] if rv else None) if one else rv
+
+
+def response(rq, short, error_msg=None):
+    if 'json' in rq.form and rq.form['json']:
+        pass
+    else:
+        if short:
+            return render_template("main.html", result=(True, rq.base_url + short))
+        else:
+            return render_template("main.html", result=(False, error_msg))
+
+
 config = load_config()
 
 app = Flask(__name__)
@@ -85,36 +101,36 @@ app.config.update(config)  # Add loaded YAML config to Flask config
 
 @app.route('/')
 def main():
-    return send_from_directory('static', 'main.html')
+    return render_template("main.html")
 
 
 @app.route('/', methods=['POST'])
 def main_post():
     if 'long' in request.form and request.form['long']:
-        database = get_db()
         if 'short' in request.form and request.form['short']:
             for char in request.form['short']:
                 if char not in current_app.config['allowed_chars']:
-                    return Response('Character ' + char + ' not allowed in short URL.', status=200)
+                    return response(request, None, 'Character ' + char + ' not allowed in short URL.')
             short = request.form['short']
         else:
             timeout = time.time() + current_app.config['random_gen_timeout']
             while True:
                 if time.time() >= timeout:
-                    return Response('Timeout while generating random short URL.', status=200)
+                    return response(request, None, 'Timeout while generating random short URL.')
                 short = generate_short()
-                if not check_short_exist(database, short):
+                if not check_short_exist(short):
                     break
-        short_exists = check_short_exist(database, short)
-        long_exists = check_long_exist(database, request.form['long'])
-        if long_exists and 'short' not in request.form:
-            return request.base_url + long_exists
+        short_exists = check_short_exist(short)
+        long_exists = check_long_exist(request.form['long'])
+        if long_exists and not ('short' in request.form and request.form['short']):
+            return response(request, long_exists)
         if short_exists:
-            return Response('Short URL already exists.', status=200)
+            return response(request, None, "Short URL already exists.")
+        database = get_db()
         database.cursor().execute("INSERT INTO urls (long,short) VALUES (?,?)", (request.form['long'], short))
         database.commit()
         database.close()
-        return "Your shortened URL is available at " + request.base_url + short
+        return response(request, short)
     else:
         return "Long URL required!"
 

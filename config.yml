@@ -5,28 +5,28 @@ admin_username: 'admin'
 # Plaintext password to make admin API requests
 # Safe to remove if admin_hashed_password is set
 # Default: unset
-admin_password: 'password'
+#admin_password:
 
 # Hashed password (bcrypt) to make admin API requests - Preferred over plaintext, use securepass.sh to generate
 # Please note that authentication takes noticeably longer than using plaintext password
 # Don't include the <username>: segment, just the hash
 # Default: unset (required to start application)
-#admin_hashed_password: '$2y$15$Dhll3IY42R.JNOYazarlG.8IndwMjxmHLpFsebJzcGTJd.gbsAwna'
+admin_hashed_password: '$2y$15$Dhll3IY42R.JNOYazarlG.8IndwMjxmHLpFsebJzcGTJd.gbsAwna'
 
-# Secret key used for cookies (used for storage of messages)
+# String: Secret key used for cookies (used for storage of messages)
 # This should be a 12-16 character randomized string with letters, numbers, and symbols
 # Default: unset (required to start application)
 secret_key: 'S$JI8L*&xua%gBoL'
 
-# Filename of the URL database
+# String: Filename of the URL database without extension
 # Default: 'urls'
 database_name: 'urls'
 
-# Length of random short URLs by default
+# Integer: Length of random short URLs by default
 # Default: 4
 random_length: 4
 
-# Allowed URL characters
+# String: Allowed URL characters
 # Default: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_
 allowed_chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
 
@@ -34,11 +34,15 @@ allowed_chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_
 # Default: 5
 random_gen_timeout: 5
 
-# Name shown on tab while on site and on page header
+# String: Name shown on tab while on site and on page header
 # Default: 'liteshort'
 site_name: 'liteshort'
 
-# URL shown when finished generating shortlinks. Include the / at the end.
+# String: URL shown when finished generating shortlinks. Include the / at the end.
 # If not set, it is automatically taken from the URL the shorten request is sent to.
 # Default: unset
 site_url:
+
+# Boolean: Show link to project repository on GitHub at bottom right corner of page
+# Default: true
+show_github_link: false

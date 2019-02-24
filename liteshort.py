@@ -1,3 +1,8 @@
+# Copyright (c) 2019 Steven Spangler <132@ikl.sh>
+# This file is part of liteshort by 132ikl
+# This software is license under the MIT license. It should be included in your copy of this software.
+# A copy of the MIT license can be obtained at https://mit-license.org/
+
 from flask import Flask, current_app, flash, g, jsonify, redirect, render_template, request, url_for
 import bcrypt
 import random
@@ -15,12 +20,13 @@ def load_config():
 
     req_options = {'admin_username': 'admin', 'database_name': "urls", 'random_length': 4,
                    'allowed_chars': 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_',
-                   'random_gen_timeout': 5, 'site_name': 'liteshort', 'site_url': None
+                   'random_gen_timeout': 5, 'site_name': 'liteshort', 'site_url': None, 'show_github_link': True,
+                   'secret_key': None
                    }
 
     config_types = {'admin_username': str, 'database_name': str, 'random_length': int,
                     'allowed_chars': str, 'random_gen_timeout': int, 'site_name': str,
-                    'site_url': (str, type(None))}
+                    'site_url': (str, type(None)), 'show_github_link': bool, 'secret_key': str}
 
     for option in req_options.keys():
         if option not in new_config.keys():  # Make sure everything in req_options is set in config

@@ -1,3 +1,9 @@
+<!--
+Copyright (c) 2019 Steven Spangler <132@ikl.sh>
+This file is part of liteshort by 132ikl
+This software is license under the MIT license. It should be included in your copy of this software.
+A copy of the MIT license can be obtained at https://mit-license.org/
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -38,5 +44,12 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
+    {% if config.show_github_link %}
+        <div class="github">
+            <a href="https://github.com/132ikl/liteshort">
+                <img src="{{ url_for('static', filename='GitHub.svg') }}">
+            </a>
+        </div>
+    {% endif %}
 </body>
 </html>

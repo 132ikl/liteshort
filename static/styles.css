@@ -1,3 +1,10 @@
+/*
+Copyright (c) 2019 Steven Spangler <132@ikl.sh>
+This file is part of liteshort by 132ikl
+This software is license under the MIT license. It should be included in your copy of this software.
+A copy of the MIT license can be obtained at https://mit-license.org/
+*/
+
 div.form {
   margin-top: 5%;
   text-align: center;
@@ -28,6 +35,11 @@ body {
   text-align: center
 }
 
+h2 {
+  font-weight: normal;
+  font-family: Open Sans;
+}
+
 div.success > a:link {
   color: #62ad2c;
 }
@@ -36,7 +48,19 @@ div.success > a:visited {
   color: #507c52;
 }
 
-h2 {
-  font-weight: normal;
-  font-family: Open Sans;
+div.github {
+  position: absolute;
+  transition: opacity .25s ease-out;
+  -moz-transition: opacity .25s ease-out;
+  -webkit-transition: opacity .25s ease-out;
+  -o-transition: opacity .25s ease-out;
+  opacity: 0.3;
+  right: 2.5%;
+  bottom: 10%;
+  width: 2.5%;
+  height: 2.5%;
+}
+
+div.github:hover {
+ opacity: 1; 
 }

@@ -1,4 +1,4 @@
-from flask import Flask, request, current_app, g, render_template, jsonify
+from flask import Flask, current_app, flash, g, jsonify, redirect, render_template, request, url_for
 import bcrypt
 import random
 import sqlite3
@@ -58,12 +58,8 @@ def check_long_exist(long):
     return False
 
 
-def check_short_exist(short, long=None):  # Allow to also check against a long link
-    query = query_db('SELECT * FROM urls WHERE short = ?', (short,))
-    for i in query:
-        if i and i['short'] == short and i['long'] == long:
-            return short
-    if query:
+def check_short_exist(short):  # Allow to also check against a long link
+    if get_long(short):
         return True
     return False
 
@@ -102,6 +98,13 @@ def generate_short(rq):
             return short
 
 
+def get_long(short):
+    row = query_db('SELECT long FROM urls WHERE short = ?', (short,), True)
+    if row and row['long']:
+        return row['long']
+    return None
+
+
 def list_shortlinks():
     result = query_db('SELECT * FROM urls', (), False, None)
     result = nested_list_to_dict(result)
@@ -129,10 +132,13 @@ def response(rq, result, error_msg="Error: Unknown error"):
         else:
             return jsonify(success=False, error=error_msg)
     else:
-        if result:
-            return render_template("main.html", result=(True, result))
-        else:
-            return render_template("main.html", result=(False, error_msg))
+        if result and result is not True:
+            flash(result, 'success')
+            return render_template("main.html")
+        elif not result:
+            flash(error_msg, 'error')
+            return render_template("main.html")
+        return render_template("main.html")
 
 
 def validate_short(short):
@@ -175,36 +181,46 @@ def close_db(error):
 
 
 app.config.update(load_config())  # Add YAML config to Flask config
+app.secret_key = app.config['secret_key']
 
 
 @app.route('/')
 def main():
-    return render_template("main.html")
+    return response(request, True)
+
+
+@app.route('/<url>')
+def main_redir(url):
+    long = get_long(url)
+    if long:
+        return redirect(long, 301)
+    flash('Short URL "' + url + '" doesn\'t exist', 'error')
+    return redirect(url_for('main'))
 
 
 @app.route('/', methods=['POST'])
 def main_post():
     # Check if long in form (ie. provided by curl) and not blank (browsers always send blank forms as empty quote)
     if 'long' in request.form and request.form['long']:
+        if not validate_long(request.form['long']):
+            return response(request, None, "Long URL is not valid")
         if 'short' in request.form and request.form['short']:
             # Validate long as URL and short custom text against allowed characters
-            if not validate_long(request.form['long']):
-                return response(request, None, "Long URL is not valid")
             result = validate_short(request.form['short'])
             if validate_short(request.form['short']) is True:
                 short = request.form['short']
             else:
                 return result
-            if check_short_exist(short, request.form['long']) is short:
+            if get_long(short) == request.form['long']:
                 return response(request, (current_app.config['site_url'] or request.base_url) + short,
                                 'Error: Failed to return pre-existing non-random shortlink')
         else:
             short = generate_short(request)
-        if check_short_exist(short) is True:
+        if check_short_exist(short):
             return response(request, None,
-                            'Short URL already exists')
+                            'Short URL already taken')
         long_exists = check_long_exist(request.form['long'])
-        if long_exists:
+        if long_exists and not request.form['short']:
             return response(request, (current_app.config['site_url'] or request.base_url) + long_exists,
                             'Error: Failed to return pre-existing random shortlink')
         get_db().cursor().execute('INSERT INTO urls (long,short) VALUES (?,?)', (request.form['long'], short))

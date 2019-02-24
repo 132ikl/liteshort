@@ -10,8 +10,13 @@ admin_password: 'password'
 # Hashed password (bcrypt) to make admin API requests - Preferred over plaintext, use securepass.sh to generate
 # Please note that authentication takes noticeably longer than using plaintext password
 # Don't include the <username>: segment, just the hash
-# Default: '$2y$15$Dhll3IY42R.JNOYazarlG.8IndwMjxmHLpFsebJzcGTJd.gbsAwna' (hash for 'password')
+# Default: unset (required to start application)
 #admin_hashed_password: '$2y$15$Dhll3IY42R.JNOYazarlG.8IndwMjxmHLpFsebJzcGTJd.gbsAwna'
+
+# Secret key used for cookies (used for storage of messages)
+# This should be a 12-16 character randomized string with letters, numbers, and symbols
+# Default: unset (required to start application)
+secret_key: 'S$JI8L*&xua%gBoL'
 
 # Filename of the URL database
 # Default: 'urls'

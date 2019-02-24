@@ -23,14 +23,20 @@
             </p>
         </form>
     </div>
-    {% if result is defined and result[0] %}
-    <div class="success">
-        ✓ Shortlink successfully generated! Available at  <a href="{{ result[1] }}">{{ result[1] }}</a>
-    </div>
-    {% elif result is defined and not result[0] %}
-    <div class="error">
-        ✖ Shortlink failed to generate! {{ result[1] }}
-    </div>
-    {% endif %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                {% if category == 'success' %}
+                <div class="success">
+                    ✓ Shortlink successfully generated! Available at  <a href="{{ message }}">{{ message }}</a>
+                </div>
+                {% elif category == 'error' %}
+                <div class="error">
+                    ✖ {{ message }}
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 </body>
 </html>

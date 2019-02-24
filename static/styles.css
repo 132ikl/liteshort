@@ -3,10 +3,6 @@ div.form {
   text-align: center;
 }
 
-input {
-  margin: auto;
-}
-
 div.success {
   display: inline-block;
   font-family: Open Sans;

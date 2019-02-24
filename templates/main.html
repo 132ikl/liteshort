@@ -12,11 +12,15 @@
     <div class="form">
         <h2>{{ config.site_name }}</h2>
         <form class="pure-form">
-            <input name="long" type="url" placeholder="Long URL">
             <p>
-            <input name="short" type="text" placeholder="Custom link (optional)">
+                <input name="long" type="url" placeholder="Long URL">
+            </p>
             <p>
-            <button type="submit" class="pure-button pure-button-primary" formmethod="post">Shorten</button>
+                <input name="short" type="text" placeholder="Custom link (optional)">
+            </p>
+            <p>
+                <button type="submit" class="pure-button pure-button-primary" formmethod="post">Shorten</button>
+            </p>
         </form>
     </div>
     {% if result is defined and result[0] %}

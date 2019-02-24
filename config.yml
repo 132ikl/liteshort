@@ -4,13 +4,14 @@ admin_username: 'admin'
 
 # Plaintext password to make admin API requests
 # Safe to remove if admin_hashed_password is set
-# Default: commented out, 'password'
-#admin_password: 'password'
+# Default: unset
+admin_password: 'password'
 
 # Hashed password (bcrypt) to make admin API requests - Preferred over plaintext, use securepass.sh to generate
+# Please note that authentication takes noticeably longer than using plaintext password
 # Don't include the <username>: segment, just the hash
 # Default: '$2y$15$Dhll3IY42R.JNOYazarlG.8IndwMjxmHLpFsebJzcGTJd.gbsAwna' (hash for 'password')
-admin_hashed_password: '$2y$15$Dhll3IY42R.JNOYazarlG.8IndwMjxmHLpFsebJzcGTJd.gbsAwna'
+#admin_hashed_password: '$2y$15$Dhll3IY42R.JNOYazarlG.8IndwMjxmHLpFsebJzcGTJd.gbsAwna'
 
 # Filename of the URL database
 # Default: 'urls'
@@ -31,3 +32,8 @@ random_gen_timeout: 5
 # Name shown on tab while on site and on page header
 # Default: 'liteshort'
 site_name: 'liteshort'
+
+# URL shown when finished generating shortlinks. Include the / at the end.
+# If not set, it is automatically taken from the URL the shorten request is sent to.
+# Default: unset
+site_url:

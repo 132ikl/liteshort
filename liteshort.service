@@ -1,0 +1,13 @@
+[Unit]
+Description=uWSGI instance to serve liteshort
+After=network.target
+
+[Service]
+User=
+Group=www-data
+WorkingDirectory=/path/to/install
+Environment="PATH=/path/to/install/virtualenv/bin"
+ExecStart=/path/to/install/virtualenv/bin/uwsgi --ini liteshort.ini
+
+[Install]
+WantedBy=multi-user.target

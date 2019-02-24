@@ -21,12 +21,14 @@ def load_config():
     req_options = {'admin_username': 'admin', 'database_name': "urls", 'random_length': 4,
                    'allowed_chars': 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_',
                    'random_gen_timeout': 5, 'site_name': 'liteshort', 'site_url': None, 'show_github_link': True,
-                   'secret_key': None
+                   'secret_key': None, 'disable_api': False
                    }
 
     config_types = {'admin_username': str, 'database_name': str, 'random_length': int,
                     'allowed_chars': str, 'random_gen_timeout': int, 'site_name': str,
-                    'site_url': (str, type(None)), 'show_github_link': bool, 'secret_key': str}
+                    'site_url': (str, type(None)), 'show_github_link': bool, 'secret_key': str,
+                    'disable_api': bool
+                    }
 
     for option in req_options.keys():
         if option not in new_config.keys():  # Make sure everything in req_options is set in config
@@ -42,13 +44,13 @@ def load_config():
                     matches = True
             if not matches:
                 raise TypeError(option + " is incorrect type")
-
-    if 'admin_hashed_password' in new_config.keys():  # Sets config value to see if bcrypt is required to check password
-        new_config['password_hashed'] = True
-    elif 'admin_password' in new_config.keys():
-        new_config['password_hashed'] = False
-    else:
-        raise TypeError('admin_password or admin_hashed_password must be set in config.yml')
+    if not new_config['disable_api']:
+        if 'admin_hashed_password' in new_config.keys():  # Sets config value to see if bcrypt is required to check password
+            new_config['password_hashed'] = True
+        elif 'admin_password' in new_config.keys():
+            new_config['password_hashed'] = False
+        else:
+            raise TypeError('admin_password or admin_hashed_password must be set in config.yml')
     return new_config
 
 
@@ -234,6 +236,8 @@ def main_post():
         return response(request, (current_app.config['site_url'] or request.base_url) + short,
                         'Error: Failed to generate')
     elif 'api' in request.form:
+        if current_app.config['disable_api']:
+            return response(request, None, "API is disabled.")
         # All API calls require authentication
         if not request.authorization \
                 or not authenticate(request.authorization['username'], request.authorization['password']):

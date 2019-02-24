@@ -1,22 +1,26 @@
-# Username to make admin API requests
+# String: Username to make admin API requests
 # Default: 'admin'
 admin_username: 'admin'
 
-# Plaintext password to make admin API requests
+# String: Plaintext password to make admin API requests
 # Safe to remove if admin_hashed_password is set
 # Default: unset
 #admin_password:
 
-# Hashed password (bcrypt) to make admin API requests - Preferred over plaintext, use securepass.sh to generate
+# String: Hashed password (bcrypt) to make admin API requests - Preferred over plaintext, use securepass.sh to generate
 # Please note that authentication takes noticeably longer than using plaintext password
 # Don't include the <username>: segment, just the hash
 # Default: unset (required to start application)
-admin_hashed_password: '$2y$15$Dhll3IY42R.JNOYazarlG.8IndwMjxmHLpFsebJzcGTJd.gbsAwna'
+admin_hashed_password:
+
+# Boolean: Disables API. If set to true, admin_password/admin_hashed_password do not need to be set.
+# Default: false
+disable_api: false
 
 # String: Secret key used for cookies (used for storage of messages)
 # This should be a 12-16 character randomized string with letters, numbers, and symbols
 # Default: unset (required to start application)
-secret_key: 'S$JI8L*&xua%gBoL'
+secret_key:
 
 # String: Filename of the URL database without extension
 # Default: 'urls'
@@ -45,4 +49,4 @@ site_url:
 
 # Boolean: Show link to project repository on GitHub at bottom right corner of page
 # Default: true
-show_github_link: false
+show_github_link: true

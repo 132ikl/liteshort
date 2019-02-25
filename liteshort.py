@@ -20,14 +20,14 @@ def load_config():
 
     req_options = {'admin_username': 'admin', 'database_name': "urls", 'random_length': 4,
                    'allowed_chars': 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_',
-                   'random_gen_timeout': 5, 'site_name': 'liteshort', 'site_url': None, 'show_github_link': True,
-                   'secret_key': None, 'disable_api': False, 'redir_url': None
+                   'random_gen_timeout': 5, 'site_name': 'liteshort', 'site_domain': None, 'show_github_link': True,
+                   'secret_key': None, 'disable_api': False, 'subdomain': ''
                    }
 
     config_types = {'admin_username': str, 'database_name': str, 'random_length': int,
                     'allowed_chars': str, 'random_gen_timeout': int, 'site_name': str,
-                    'site_url': (str, type(None)), 'show_github_link': bool, 'secret_key': str,
-                    'disable_api': bool, 'redir_url': (str, type(None))
+                    'site_domain': (str, type(None)), 'show_github_link': bool, 'secret_key': str,
+                    'disable_api': bool, 'subdomain': (str, type(None))
                     }
 
     for option in req_options.keys():
@@ -127,9 +127,9 @@ def nested_list_to_dict(l):
 
 
 def response(rq, result, error_msg="Error: Unknown error"):
-    if 'api' in rq.form and 'format' not in rq.form:
+    if rq.form.get('api') and not rq.form.get('format') == 'json':
         return "Format type HTML (default) not support for API"  # Future-proof for non-json return types
-    if 'format' in rq.form and rq.form['format'] == 'json':
+    if rq.form.get('format') == 'json':
         # If not result provided OR result doesn't exist, send error
         # Allows for setting an error message with explicitly checking in regular code
         if result:
@@ -190,9 +190,10 @@ def close_db(error):
 
 app.config.update(load_config())  # Add YAML config to Flask config
 app.secret_key = app.config['secret_key']
+app.config['SERVER_NAME'] = app.config['site_domain']
 
 
-@app.route('/')
+@app.route('/', subdomain=app.config['subdomain'])
 def main():
     return response(request, True)
 
@@ -203,17 +204,16 @@ def main_redir(url):
     if long:
         return redirect(long, 301)
     flash('Short URL "' + url + '" doesn\'t exist', 'error')
-    redirect_site = (current_app.config['redir_url'] or url_for('main'))
+    redirect_site = url_for('main')
     return redirect(redirect_site)
 
 
-@app.route('/', methods=['POST'])
+@app.route('/', methods=['POST'], subdomain=app.config['subdomain'])
 def main_post():
-    # Check if long in form (ie. provided by curl) and not blank (browsers always send blank forms as empty quote)
-    if 'long' in request.form and request.form['long']:
+    if request.form.get('long'):
         if not validate_long(request.form['long']):
             return response(request, None, "Long URL is not valid")
-        if 'short' in request.form and request.form['short']:
+        if request.form.get('short'):
             # Validate long as URL and short custom text against allowed characters
             result = validate_short(request.form['short'])
             if validate_short(request.form['short']) is True:
@@ -221,7 +221,7 @@ def main_post():
             else:
                 return result
             if get_long(short) == request.form['long']:
-                return response(request, (current_app.config['site_url'] or request.base_url) + short,
+                return response(request, (('https://' + app.config['site_domain'] + '/') or request.base_url) + short,
                                 'Error: Failed to return pre-existing non-random shortlink')
         else:
             short = generate_short(request)
@@ -229,14 +229,15 @@ def main_post():
             return response(request, None,
                             'Short URL already taken')
         long_exists = check_long_exist(request.form['long'])
-        if long_exists and not request.form['short']:
-            return response(request, (current_app.config['site_url'] or request.base_url) + long_exists,
+        if long_exists and not request.form.get('short'):
+            # TODO: un-hack-ify adding the protocol here
+            return response(request, (('https://' + app.config['site_domain'] + '/') or request.base_url) + long_exists,
                             'Error: Failed to return pre-existing random shortlink')
         get_db().cursor().execute('INSERT INTO urls (long,short) VALUES (?,?)', (request.form['long'], short))
         get_db().commit()
-        return response(request, (current_app.config['site_url'] or request.base_url) + short,
+        return response(request, (('https://' + app.config['site_domain'] + '/') or request.base_url) + short,
                         'Error: Failed to generate')
-    elif 'api' in request.form:
+    elif request.form.get('api'):
         if current_app.config['disable_api']:
             return response(request, None, "API is disabled.")
         # All API calls require authentication

@@ -42,17 +42,17 @@ random_gen_timeout: 5
 # Default: 'liteshort'
 site_name: 'liteshort'
 
-# String: URL shown when finished generating shortlinks. Include the / at the end.
+# String: Domain where the shortlinks will be served from. Useful if using the web interface on a subdomain.
 # If not set, it is automatically taken from the URL the shorten request is sent to.
 # If you don't know, leave unset
 # Default: unset
-site_url:
+site_domain: ''
 
-# String: URL to redirect to when link not found. Useful if using a reverse proxy with a subdomain for liteshort
-# If not set, it is automatically taken from the base URL
+# String: Subdomain to host the web interface on.
+# Useful if you want the shorturls on the short domain but the web interface on a subdomain.
 # If you don't know, leave unset
 # Default: unset
-redir_url:
+subdomain: ''
 
 # Boolean: Show link to project repository on GitHub at bottom right corner of page
 # Default: true

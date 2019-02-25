@@ -46,13 +46,13 @@ site_name: 'liteshort'
 # If not set, it is automatically taken from the URL the shorten request is sent to.
 # If you don't know, leave unset
 # Default: unset
-site_domain: ''
+site_domain:
 
 # String: Subdomain to host the web interface on.
 # Useful if you want the shorturls on the short domain but the web interface on a subdomain.
 # If you don't know, leave unset
 # Default: unset
-subdomain: ''
+subdomain:
 
 # Boolean: Show link to project repository on GitHub at bottom right corner of page
 # Default: true

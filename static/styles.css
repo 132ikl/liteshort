@@ -5,6 +5,10 @@ This software is license under the MIT license. It should be included in your co
 A copy of the MIT license can be obtained at https://mit-license.org/
 */
 
+input {
+  margin: auto;
+}
+
 div.form {
   margin-top: 5%;
   text-align: center;
@@ -55,10 +59,10 @@ div.github {
   -webkit-transition: opacity .25s ease-out;
   -o-transition: opacity .25s ease-out;
   opacity: 0.3;
-  right: 2.5%;
-  bottom: 10%;
-  width: 2.5%;
-  height: 2.5%;
+  right: 2.5vw;
+  bottom: 15vh;
+  width: 50px;
+  height: 10px;
 }
 
 div.github:hover {

@@ -194,7 +194,7 @@ app.secret_key = app.config['secret_key']
 app.config['SERVER_NAME'] = app.config['site_domain']
 
 
-@app.route('/favicon.ico')
+@app.route('/favicon.ico', subdomain=app.config['subdomain'])
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')

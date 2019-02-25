@@ -21,13 +21,13 @@ def load_config():
     req_options = {'admin_username': 'admin', 'database_name': "urls", 'random_length': 4,
                    'allowed_chars': 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_',
                    'random_gen_timeout': 5, 'site_name': 'liteshort', 'site_url': None, 'show_github_link': True,
-                   'secret_key': None, 'disable_api': False
+                   'secret_key': None, 'disable_api': False, 'redir_url': None
                    }
 
     config_types = {'admin_username': str, 'database_name': str, 'random_length': int,
                     'allowed_chars': str, 'random_gen_timeout': int, 'site_name': str,
                     'site_url': (str, type(None)), 'show_github_link': bool, 'secret_key': str,
-                    'disable_api': bool
+                    'disable_api': bool, 'redir_url': (str, type(None))
                     }
 
     for option in req_options.keys():
@@ -45,9 +45,9 @@ def load_config():
             if not matches:
                 raise TypeError(option + " is incorrect type")
     if not new_config['disable_api']:
-        if 'admin_hashed_password' in new_config.keys():  # Sets config value to see if bcrypt is required to check password
+        if 'admin_hashed_password' in new_config.keys() and new_config['admin_hashed_password']:
             new_config['password_hashed'] = True
-        elif 'admin_password' in new_config.keys():
+        elif 'admin_password' in new_config.keys() and new_config['admin_password']:
             new_config['password_hashed'] = False
         else:
             raise TypeError('admin_password or admin_hashed_password must be set in config.yml')
@@ -203,7 +203,8 @@ def main_redir(url):
     if long:
         return redirect(long, 301)
     flash('Short URL "' + url + '" doesn\'t exist', 'error')
-    return redirect(url_for('main'))
+    redirect_site = (current_app.config['redir_url'] or url_for('main'))
+    return redirect(redirect_site)
 
 
 @app.route('/', methods=['POST'])

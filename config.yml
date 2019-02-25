@@ -44,8 +44,15 @@ site_name: 'liteshort'
 
 # String: URL shown when finished generating shortlinks. Include the / at the end.
 # If not set, it is automatically taken from the URL the shorten request is sent to.
+# If you don't know, leave unset
 # Default: unset
 site_url:
+
+# String: URL to redirect to when link not found. Useful if using a reverse proxy with a subdomain for liteshort
+# If not set, it is automatically taken from the base URL
+# If you don't know, leave unset
+# Default: unset
+redir_url:
 
 # Boolean: Show link to project repository on GitHub at bottom right corner of page
 # Default: true

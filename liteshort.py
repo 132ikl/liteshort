@@ -3,8 +3,9 @@
 # This software is license under the MIT license. It should be included in your copy of this software.
 # A copy of the MIT license can be obtained at https://mit-license.org/
 
-from flask import Flask, current_app, flash, g, jsonify, redirect, render_template, request, url_for
+from flask import Flask, current_app, flash, g, jsonify, redirect, render_template, request, send_from_directory, url_for
 import bcrypt
+import os
 import random
 import sqlite3
 import time
@@ -191,6 +192,12 @@ def close_db(error):
 app.config.update(load_config())  # Add YAML config to Flask config
 app.secret_key = app.config['secret_key']
 app.config['SERVER_NAME'] = app.config['site_domain']
+
+
+@app.route('/favicon.ico', subdomain=app.config['subdomain'])
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 
 @app.route('/', subdomain=app.config['subdomain'])

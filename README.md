@@ -1,6 +1,8 @@
 # liteshort
 liteshort is a link shortener designed with lightweightness, user and sysadmin-friendliness, privacy, and configurability in mind.
 
+Click [here](https://ls.ikl.sh) for a live demo.
+
 *Why liteshort over other URL shorteners?*
 
 liteshort is designed with the main goal of being lightweight. It does away with all the frills of other link shorteners and allows the best of the basics at a small resource price. liteshort uses under 20 MB of memory idle, per worker. liteshort has an easy-to-use API and web interface. liteshort doesn't store any more information than necessary: just the long and short URLs. It does not log the date of creation, the remote IP, or any other information.
@@ -62,3 +64,63 @@ Everything other than creation of links requires BasicAuth using the username an
     * Lists all links in the database, sorted by long links.
 * `delete`
     * Deletes a URL. In the form data, set `short` to the short link you want to delete, or set `long` to delete all short links that redirect to the provided long link.
+    
+## Using a reverse proxy
+The following are barebones examples of an nginx proxy for liteshort, meaning it doesn't have SSL or anything fancy. You may also use a non-nginx webserver by making a config equivalent for it based upon the following configurations. Make sure your webserver is serving the /static/ folder. While liteshort can serve the folder, webservers are much more efficient at serving static files.
+
+### On domain root
+
+
+```
+server {
+
+    listen 80;
+
+    server_name example.com;
+    
+    location ^~ /static/  {
+         include  /etc/nginx/mime.types;
+         root /usr/local/liteshort/;
+    }
+
+    location / {
+        include uwsgi_params;
+        uwsgi_pass unix:/path/to/liteshort/liteshort.sock;
+    }
+}
+```
+
+### On a subdomain
+First, make sure `site_domain` and `subdomain` options are set in config.yml. If you want the web interface on a subdomain, but the actual shortlinks on the main domain, as seen on the [demo site](https://ls.ikl.sh), use a configuration akin to the following. Make sure that anything you want to happen before liteshort, like a homepage on /, has its location block BEFORE the rewrite block. Nginx goes in numerical order of location blocks, so the rewrite location block will redirect everything on / to liteshort if not the last block.
+
+```
+server {
+
+    listen 80;
+
+    server_name subdomain.example.com;
+
+    location / {
+        include uwsgi_params;
+        uwsgi_pass unix:/path/to/liteshort/liteshort.sock;
+    }
+}
+
+server {
+
+    listen 80;
+ 
+    server_name example.com;
+    
+    location ^~ /static/  {
+         include  /etc/nginx/mime.types;
+         root /usr/local/liteshort/;
+    }
+    
+    location / {
+        rewrite /example/subdomain.example(.+) /$1 break;
+        include uwsgi_params;
+        uwsgi_pass unix:/usr/local/liteshort/liteshort.sock;
+    }
+}
+```

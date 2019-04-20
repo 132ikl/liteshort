@@ -3,7 +3,7 @@
 # This software is license under the MIT license. It should be included in your copy of this software.
 # A copy of the MIT license can be obtained at https://mit-license.org/
 
-from flask import Flask, current_app, flash, g, jsonify, redirect, render_template, request, send_from_directory, url_for
+from flask import Flask, current_app, flash, g, jsonify, make_response, redirect, render_template, request, send_from_directory, url_for
 import bcrypt
 import os
 import random
@@ -22,13 +22,13 @@ def load_config():
     req_options = {'admin_username': 'admin', 'database_name': "urls", 'random_length': 4,
                    'allowed_chars': 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_',
                    'random_gen_timeout': 5, 'site_name': 'liteshort', 'site_domain': None, 'show_github_link': True,
-                   'secret_key': None, 'disable_api': False, 'subdomain': ''
+                   'secret_key': None, 'disable_api': False, 'subdomain': '', 'latest': 'l'
                    }
 
     config_types = {'admin_username': str, 'database_name': str, 'random_length': int,
                     'allowed_chars': str, 'random_gen_timeout': int, 'site_name': str,
                     'site_domain': (str, type(None)), 'show_github_link': bool, 'secret_key': str,
-                    'disable_api': bool, 'subdomain': (str, type(None))
+                    'disable_api': bool, 'subdomain': (str, type(None)), 'latest': (str, type(None))
                     }
 
     for option in req_options.keys():
@@ -62,7 +62,7 @@ def authenticate(username, password):
 def check_long_exist(long):
     query = query_db('SELECT short FROM urls WHERE long = ?', (long,))
     for i in query:
-        if i and (len(i['short']) <= current_app.config["random_length"]):  # Checks if query if pre-existing URL is same as random length URL
+        if i and (len(i['short']) <= current_app.config["random_length"]) and i['short'] != current_app.config['latest']:  # Checks if query if pre-existing URL is same as random length URL
             return i['short']
     return False
 
@@ -103,7 +103,7 @@ def generate_short(rq):
             return response(rq, None, 'Timeout while generating random short URL')
         short = ''.join(random.choice(current_app.config['allowed_chars'])
                         for i in range(current_app.config['random_length']))
-        if not check_short_exist(short):
+        if not check_short_exist(short) and short != app.config['latest']:
             return short
 
 
@@ -112,6 +112,14 @@ def get_long(short):
     if row and row['long']:
         return row['long']
     return None
+
+
+def get_baseUrl():
+    if current_app.config['site_domain']:
+        # TODO: un-hack-ify adding the protocol here
+        return 'https://' + current_app.config['site_domain'] + '/'
+    else:
+        return request.base_url
 
 
 def list_shortlinks():
@@ -123,7 +131,7 @@ def list_shortlinks():
 def nested_list_to_dict(l):
     d = {}
     for nl in l:
-            d[nl[0]] = nl[1]
+        d[nl[0]] = nl[1]
     return d
 
 
@@ -143,14 +151,25 @@ def response(rq, result, error_msg="Error: Unknown error"):
     else:
         if result and result is not True:
             flash(result, 'success')
-            return render_template("main.html")
         elif not result:
             flash(error_msg, 'error')
-            return render_template("main.html")
         return render_template("main.html")
 
 
+def set_latest(long):
+    if app.config['latest']:
+        if query_db('SELECT short FROM urls WHERE short = ?', (current_app.config['latest'],)):
+            get_db().cursor().execute("UPDATE urls SET long = ? WHERE short = ?",
+                                      (long, current_app.config['latest']))
+        else:
+            get_db().cursor().execute("INSERT INTO urls (long,short) VALUES (?, ?)",
+                                      (long, current_app.config['latest']))
+
+
 def validate_short(short):
+    if short == app.config['latest']:
+        return response(request, None,
+                        'Short URL cannot be the same as a special URL ({})'.format(short))
     for char in short:
         if char not in current_app.config['allowed_chars']:
             return response(request, None,
@@ -209,10 +228,12 @@ def main():
 def main_redir(url):
     long = get_long(url)
     if long:
-        return redirect(long, 301)
-    flash('Short URL "' + url + '" doesn\'t exist', 'error')
-    redirect_site = url_for('main')
-    return redirect(redirect_site)
+        resp = make_response(redirect(long, 301))
+    else:
+        flash('Short URL "' + url + '" doesn\'t exist', 'error')
+        resp = make_response(redirect(url_for('main')))
+    resp.headers.set('Cache-Control', 'no-store, must-revalidate')
+    return resp
 
 
 @app.route('/', methods=['POST'], subdomain=app.config['subdomain'])
@@ -228,7 +249,7 @@ def main_post():
             else:
                 return result
             if get_long(short) == request.form['long']:
-                return response(request, (('https://' + app.config['site_domain'] + '/') or request.base_url) + short,
+                return response(request, get_baseUrl() + short,
                                 'Error: Failed to return pre-existing non-random shortlink')
         else:
             short = generate_short(request)
@@ -237,12 +258,15 @@ def main_post():
                             'Short URL already taken')
         long_exists = check_long_exist(request.form['long'])
         if long_exists and not request.form.get('short'):
-            # TODO: un-hack-ify adding the protocol here
-            return response(request, (('https://' + app.config['site_domain'] + '/') or request.base_url) + long_exists,
+            set_latest(request.form['long'])
+            get_db().commit()
+            return response(request, get_baseUrl() + long_exists,
                             'Error: Failed to return pre-existing random shortlink')
         get_db().cursor().execute('INSERT INTO urls (long,short) VALUES (?,?)', (request.form['long'], short))
+        set_latest(request.form['long'])
         get_db().commit()
-        return response(request, (('https://' + app.config['site_domain'] + '/') or request.base_url) + short,
+
+        return response(request, get_baseUrl() + short,
                         'Error: Failed to generate')
     elif request.form.get('api'):
         if current_app.config['disable_api']:

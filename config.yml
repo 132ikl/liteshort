@@ -54,6 +54,12 @@ site_domain:
 # Default: unset
 subdomain:
 
+# String: URL which takes you to the most recent short URL's destination
+# Short URLs cannot be created with this string if set
+# Default: l
+latest: 'l'
+
 # Boolean: Show link to project repository on GitHub at bottom right corner of page
 # Default: true
 show_github_link: true
+

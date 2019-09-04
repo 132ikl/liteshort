@@ -64,6 +64,15 @@ Everything other than creation of links requires BasicAuth using the username an
     * Lists all links in the database, sorted by long links.
 * `delete`
     * Deletes a URL. In the form data, set `short` to the short link you want to delete, or set `long` to delete all short links that redirect to the provided long link.
+
+### Example Request
+```
+curl -u [admin_username]:[admin_password] \
+  -d 'format=json' \
+  -d 'api=delete' \
+  -d 'short=[short]' \
+  [url]
+```
     
 ## Using a reverse proxy
 The following are barebones examples of an nginx proxy for liteshort, meaning it doesn't have SSL or anything fancy. You may also use a non-nginx webserver by making a config equivalent for it based upon the following configurations. Make sure your webserver is serving the /static/ folder. While liteshort can serve the folder, webservers are much more efficient at serving static files.

@@ -22,13 +22,13 @@ def load_config():
     req_options = {'admin_username': 'admin', 'database_name': "urls", 'random_length': 4,
                    'allowed_chars': 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_',
                    'random_gen_timeout': 5, 'site_name': 'liteshort', 'site_domain': None, 'show_github_link': True,
-                   'secret_key': None, 'disable_api': False, 'subdomain': '', 'latest': 'l'
+                   'secret_key': None, 'disable_api': False, 'subdomain': '', 'latest': 'l', 'selflinks': False
                    }
 
     config_types = {'admin_username': str, 'database_name': str, 'random_length': int,
                     'allowed_chars': str, 'random_gen_timeout': int, 'site_name': str,
                     'site_domain': (str, type(None)), 'show_github_link': bool, 'secret_key': str,
-                    'disable_api': bool, 'subdomain': (str, type(None)), 'latest': (str, type(None))
+                    'disable_api': bool, 'subdomain': (str, type(None)), 'latest': (str, type(None)), 'selflinks': bool
                     }
 
     for option in req_options.keys():
@@ -72,6 +72,10 @@ def check_short_exist(short):  # Allow to also check against a long link
         return True
     return False
 
+def check_self_link(long):
+    if get_baseUrl().rstrip('/') in long:
+        return True
+    return False
 
 def check_password(password, pass_config):
     if pass_config['password_hashed']:
@@ -257,6 +261,9 @@ def main_post():
             return response(request, None,
                             'Short URL already taken')
         long_exists = check_long_exist(request.form['long'])
+        if check_self_link(request.form['long']) and not current_app.config['selflinks']:
+            return response(request, None,
+                            'You cannot link to this site')
         if long_exists and not request.form.get('short'):
             set_latest(request.form['long'])
             get_db().commit()

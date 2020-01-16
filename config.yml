@@ -63,3 +63,6 @@ latest: 'l'
 # Default: true
 show_github_link: true
 
+# Boolean: Allow short URLs linking to your site_domain URL
+# Default: false
+selflinks: false

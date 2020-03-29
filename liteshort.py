@@ -38,6 +38,7 @@ def load_config():
         "subdomain": "",
         "latest": "l",
         "selflinks": False,
+        "blacklist": [],
     }
 
     config_types = {
@@ -54,6 +55,7 @@ def load_config():
         "subdomain": (str, type(None)),
         "latest": (str, type(None)),
         "selflinks": bool,
+        "blacklist": list,
     }
 
     for option in req_options.keys():
@@ -117,6 +119,14 @@ def check_short_exist(short):  # Allow to also check against a long link
 
 def check_self_link(long):
     if get_baseUrl().rstrip("/") in long:
+        return True
+    return False
+
+
+def linking_to_blacklist(long):
+    # Removes protocol and other parts of the URL to extract the domain name
+    long = long.split("//")[-1].split("/")[0]
+    if long in current_app.config["blacklist"]:
         return True
     return False
 
@@ -333,6 +343,8 @@ def main_post():
             and not current_app.config["selflinks"]
         ):
             return response(request, None, "You cannot link to this site")
+        if linking_to_blacklist(request.form["long"]):
+            return response(request, None, "You cannot link to this blacklisted site")
         if long_exists and not request.form.get("short"):
             set_latest(request.form["long"])
             get_db().commit()

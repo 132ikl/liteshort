@@ -66,3 +66,11 @@ show_github_link: true
 # Boolean: Allow short URLs linking to your site_domain URL
 # Default: false
 selflinks: false
+
+# List: Prevent creation of URLs linking to domains in the blacklist
+# Example of list formatting in yaml:
+# blacklist:
+#     - blacklisted.com
+#     - subdomain.blacklisted.net
+# Default: []
+blacklist: []

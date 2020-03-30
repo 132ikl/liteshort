@@ -67,10 +67,10 @@ show_github_link: true
 # Default: false
 selflinks: false
 
-# List: Prevent creation of URLs linking to domains in the blacklist
+# List: Prevent creation of URLs linking to domains in the blocklist
 # Example of list formatting in yaml:
-# blacklist:
-#     - blacklisted.com
-#     - subdomain.blacklisted.net
+# blocklist:
+#     - blocklisted.com
+#     - subdomain.blocklisted.net
 # Default: []
-blacklist: []
+blocklist: []

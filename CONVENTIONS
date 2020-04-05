@@ -1,0 +1,27 @@
+The following is a description of design philosphies and standards for liteshort. This document is mostly for developers, however if you are interested feel free to take a peek.
+
+DESIGN PHILOSPHIES:
+    - Liteshort should be light on hardware resources. It doesn't need to be as minimal as possible, however it should never use excessive amounts of memory or CPU time.
+    - Liteshort should have readable code. Readability is more important than small performance gains.
+    - Liteshort should be easily configurable. If something could be an option, it should be.
+    - Liteshort should be simple to install and maintain. Installing should be a simple process, whether from a package manager or when installing from source.
+    - Liteshort should follow system design standards. This includes basic Unix design principles and the Filesystem Hierarchy Standard.
+
+FILE STRUCTURE:
+    - Executable file: /usr/bin/liteshort
+    - Source directory: /usr/lib/python3/dist-packages/liteshort
+    - Config directory: /etc/liteshort/
+    - Socket file: /run/liteshort.sock
+
+PYPI PACKAGE:
+The PyPi package should provide no more than the following:
+    - Install source to Python package directory
+    - Install template config files
+    - Install debug executable (liteshort.py) installed
+    - Install python-only requirements (no uwsgi)
+
+DEBIAN PACAKGE:
+The Debian package should provide no more than the following:
+    - Install uwsgi
+    - Install and enable systemd service
+    - Should be based upon pybuild, as to prevent redundant packaging

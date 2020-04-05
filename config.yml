@@ -5,7 +5,7 @@ admin_username: 'admin'
 # String: Plaintext password to make admin API requests
 # Safe to remove if admin_hashed_password is set
 # Default: unset
-admin_password: alright
+admin_password:
 
 # String: Hashed password (bcrypt) to make admin API requests - Preferred over plaintext, use securepass.sh to generate
 # Please note that authentication takes noticeably longer than using plaintext password
@@ -20,7 +20,7 @@ disable_api: false
 # String: Secret key used for cookies (used for storage of messages)
 # This should be a 12-16 character randomized string with letters, numbers, and symbols
 # Default: unset (required to start application)
-secret_key: falksfjsdlkfjsdfkljsdlkjfsd
+secret_key:
 
 # String: Filename of the URL database without extension
 # Default: 'urls'

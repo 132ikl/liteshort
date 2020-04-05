@@ -35,7 +35,7 @@ Edit `liteshort.ini` and `liteshort.service` as seen fit. Then edit `config.yml`
 
 Finally,
 ```sh
-cp liteshort.service /etc/systemd/system/
+cp liteshort.service /usr/lib/systemd/system/
 systemctl enable liteshort
 systemctl start liteshort
 ```
@@ -55,7 +55,6 @@ Note that using admin_hashed_password is more resource-intensive than `admin_pas
 
 
 ## API
-All API requests should have the POST form data `format` set to `json`.
 In order to create a new short URL, simply make a POST request with the form data `long` set to your long link and, optionally, set `short` to your short link.
 Everything other than creation of links requires BasicAuth using the username and password defined in the configuration file. To use the following commands, set `api` to the command in the form data of your request.
 * `list` and `listshort`
@@ -68,12 +67,12 @@ Everything other than creation of links requires BasicAuth using the username an
 ### Example Request
 ```
 curl -u [admin_username]:[admin_password] \
-  -d 'format=json' \
-  -d 'api=delete' \
-  -d 'short=[short]' \
+  -H "Accept: application/json" \
+  -d "api=delete" \
+  -d "short=[short]" \
   [url]
 ```
-    
+
 ## Using a reverse proxy
 The following are barebones examples of an nginx proxy for liteshort, meaning it doesn't have SSL or anything fancy. You may also use a non-nginx webserver by making a config equivalent for it based upon the following configurations. Make sure your webserver is serving the /static/ folder. While liteshort can serve the folder, webservers are much more efficient at serving static files.
 

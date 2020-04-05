@@ -25,10 +25,9 @@ Start in the directory you wish to install to and modify to fit your installatio
 
 ```sh
 git clone https://github.com/132ikl/liteshort
-python3 -m venv virtualenv
-source virtualenv/bin/activate
-pip install wheel
-pip install bcrypt flask pyyaml uwsgi
+python3 -m venv venv
+source venv/bin/activate
+pip3 install -r requirements.txt uwsgi
 ```
 
 Edit `liteshort.ini` and `liteshort.service` as seen fit. Then edit `config.yml` according to the [Configuration](#configuration) section.

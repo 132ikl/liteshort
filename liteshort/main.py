@@ -1,36 +1,21 @@
-# Copyright (c) 2020 Steven Spangler <132@ikl.sh>
-# This file is part of liteshort by 132ikl
-# This software is license under the MIT license. It should be included in your copy of this software.
-# A copy of the MIT license can be obtained at https://mit-license.org/
-
+#!/usr/bin/env python3
 import os
 import random
 import sqlite3
 import time
 import urllib
 
-import bcrypt
-import yaml
-from flask import (
-    Flask,
-    current_app,
-    flash,
-    g,
-    jsonify,
-    make_response,
-    redirect,
-    render_template,
-    request,
-    send_from_directory,
-    url_for,
-)
+import flask
+from bcrypt import checkpw
+from flask import current_app, g, redirect, render_template, request, url_for
+from yaml import safe_load
 
-app = Flask(__name__)
+app = flask.Flask(__name__)
 
 
 def load_config():
     with open("config.yml") as config:
-        configYaml = yaml.safe_load(config)
+        configYaml = safe_load(config)
     config = {
         k.lower(): v for k, v in configYaml.items()
     }  # Make config keys case insensitive
@@ -137,7 +122,7 @@ def linking_to_blocklist(long):
 
 def check_password(password, pass_config):
     if pass_config["password_hashed"]:
-        return bcrypt.checkpw(
+        return checkpw(
             password.encode("utf-8"),
             pass_config["admin_hashed_password"].encode("utf-8"),
         )
@@ -220,15 +205,15 @@ def response(rq, result, error_msg="Error: Unknown error"):
     if rq.form.get("api"):
         if rq.accept_mimetypes.accept_json:
             if result:
-                return jsonify(success=bool(result), result=result)
-            return jsonify(success=bool(result), message=error_msg)
+                return flask.jsonify(success=bool(result), result=result)
+            return flask.jsonify(success=bool(result), message=error_msg)
         else:
             return "Format type HTML (default) not supported for API"  # Future-proof for non-json return types
     else:
         if result and result is not True:
-            flash(result, "success")
+            flask.flash(result, "success")
         elif not result:
-            flash(error_msg, "error")
+            flask.flash(error_msg, "error")
         return render_template("main.html")
 
 
@@ -302,7 +287,7 @@ app.config["SERVER_NAME"] = app.config["site_domain"]
 
 @app.route("/favicon.ico", subdomain=app.config["subdomain"])
 def favicon():
-    return send_from_directory(
+    return flask.send_from_directory(
         os.path.join(app.root_path, "static"),
         "favicon.ico",
         mimetype="image/vnd.microsoft.icon",
@@ -318,10 +303,10 @@ def main():
 def main_redir(url):
     long = get_long(url)
     if long:
-        resp = make_response(redirect(long, 301))
+        resp = flask.make_response(flask.redirect(long, 301))
     else:
-        flash('Short URL "' + url + "\" doesn't exist", "error")
-        resp = make_response(redirect(url_for("main")))
+        flask.flash('Short URL "' + url + "\" doesn't exist", "error")
+        resp = flask.make_response(flask.redirect(url_for("main")))
     resp.headers.set("Cache-Control", "no-store, must-revalidate")
     return resp
 

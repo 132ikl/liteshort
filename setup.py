@@ -25,6 +25,6 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: POSIX :: Linux",
     ],
-    install_requires=["flask~=1.1.2", "bcrypt~=3.1.7", "pyyaml~=5.3.1"],
+    install_requires=["flask~=1.1.2", "bcrypt~=3.1.7", "pyyaml", "appdirs~=1.4.3"],
     python_requires=">=3.7",
 )

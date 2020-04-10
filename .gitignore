@@ -108,6 +108,3 @@ venv.bak/
 
 # Databases
 *.db
-
-# liteshort
-config.yml

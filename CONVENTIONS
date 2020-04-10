@@ -1,3 +1,5 @@
+TODO: Move to wiki
+
 The following is a description of design philosphies and standards for liteshort. This document is mostly for developers, however if you are interested feel free to take a peek.
 
 DESIGN PHILOSPHIES:
@@ -7,21 +9,25 @@ DESIGN PHILOSPHIES:
     - Liteshort should be simple to install and maintain. Installing should be a simple process, whether from a package manager or when installing from source.
     - Liteshort should follow system design standards. This includes basic Unix design principles and the Filesystem Hierarchy Standard.
 
-FILE STRUCTURE:
-    - Executable file: /usr/bin/liteshort
-    - Source directory: /usr/lib/python3/dist-packages/liteshort
-    - Config directory: /etc/liteshort/
-    - Socket file: /run/liteshort.sock
 
-PYPI PACKAGE:
-The PyPi package should provide no more than the following:
-    - Install source to Python package directory
-    - Install template config files
-    - Install debug executable (liteshort.py) installed
-    - Install python-only requirements (no uwsgi)
+PROPOSAL FOR A DEBIAN PACKAGE
 
-DEBIAN PACAKGE:
-The Debian package should provide no more than the following:
-    - Install uwsgi
-    - Install and enable systemd service
-    - Should be based upon pybuild, as to prevent redundant packaging
+File Structure:
+    x Debug Executable file: liteshort in $PATH
+    x Hashpw executable file: lshash in $PATH
+    x Source directory: system Python module folder (eg. /usr/lib/python3/dist-packages/liteshort)
+    x Config directory: /etc/liteshort/ OR appdirs.site_config_dir OR appdirs.user_config_dir
+    - Socket file (if applicable): /run/liteshort.sock
+
+Pypi Package:
+    The PyPi package should provide no more than the following:
+        x Install source to Python package directory
+        x Install template config files
+        x Install debug executables installed
+        x Install minimum requirements (no uwsgi)
+
+Debian Pacakge:
+    The Debian package should provide no more than the following:
+        - Install uwsgi
+        - Install and enable systemd service
+        - Should be based upon pybuild, as to prevent redundant packaging

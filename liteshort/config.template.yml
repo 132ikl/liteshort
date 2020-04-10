@@ -5,13 +5,13 @@ admin_username: 'admin'
 # String: Plaintext password to make admin API requests
 # Safe to remove if admin_hashed_password is set
 # Default: unset
-admin_password:
+#admin_password:
 
-# String: Hashed password (bcrypt) to make admin API requests - Preferred over plaintext, use securepass.sh to generate
+# String: Hashed password (bcrypt) to make admin API requests - Preferred over plaintext, use lshash to generate
 # Please note that authentication takes noticeably longer than using plaintext password
 # Don't include the <username>: segment, just the hash
 # Default: unset (required to start application)
-#admin_hashed_password:
+admin_hashed_password:
 
 # Boolean: Disables API. If set to true, admin_password/admin_hashed_password do not need to be set.
 # Default: false
@@ -56,6 +56,7 @@ subdomain:
 
 # String: URL which takes you to the most recent short URL's destination
 # Short URLs cannot be created with this string if set
+# Unset to disable
 # Default: l
 latest: 'l'
 

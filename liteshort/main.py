@@ -1,94 +1,16 @@
-# Copyright (c) 2019 Steven Spangler <132@ikl.sh>
-# This file is part of liteshort by 132ikl
-# This software is license under the MIT license. It should be included in your copy of this software.
-# A copy of the MIT license can be obtained at https://mit-license.org/
-
 import os
 import random
 import sqlite3
 import time
 import urllib
 
-import bcrypt
-import yaml
-from flask import (Flask, current_app, flash, g, jsonify, make_response,
-                   redirect, render_template, request, send_from_directory,
-                   url_for)
+import flask
+from bcrypt import checkpw
+from flask import current_app, g, redirect, render_template, request, url_for
 
-app = Flask(__name__)
+from .config import load_config
 
-
-def load_config():
-    new_config = yaml.load(open("config.yml"))
-    new_config = {
-        k.lower(): v for k, v in new_config.items()
-    }  # Make config keys case insensitive
-
-    req_options = {
-        "admin_username": "admin",
-        "database_name": "urls",
-        "random_length": 4,
-        "allowed_chars": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_",
-        "random_gen_timeout": 5,
-        "site_name": "liteshort",
-        "site_domain": None,
-        "show_github_link": True,
-        "secret_key": None,
-        "disable_api": False,
-        "subdomain": "",
-        "latest": "l",
-        "selflinks": False,
-    }
-
-    config_types = {
-        "admin_username": str,
-        "database_name": str,
-        "random_length": int,
-        "allowed_chars": str,
-        "random_gen_timeout": int,
-        "site_name": str,
-        "site_domain": (str, type(None)),
-        "show_github_link": bool,
-        "secret_key": str,
-        "disable_api": bool,
-        "subdomain": (str, type(None)),
-        "latest": (str, type(None)),
-        "selflinks": bool,
-    }
-
-    for option in req_options.keys():
-        if (
-            option not in new_config.keys()
-        ):  # Make sure everything in req_options is set in config
-            new_config[option] = req_options[option]
-
-    for option in new_config.keys():
-        if option in config_types:
-            matches = False
-            if type(config_types[option]) is not tuple:
-                config_types[option] = (
-                    config_types[option],
-                )  # Automatically creates tuple for non-tuple types
-            for req_type in config_types[
-                option
-            ]:  # Iterates through tuple to allow multiple types for config options
-                if type(new_config[option]) is req_type:
-                    matches = True
-            if not matches:
-                raise TypeError(option + " is incorrect type")
-    if not new_config["disable_api"]:
-        if (
-            "admin_hashed_password" in new_config.keys()
-            and new_config["admin_hashed_password"]
-        ):
-            new_config["password_hashed"] = True
-        elif "admin_password" in new_config.keys() and new_config["admin_password"]:
-            new_config["password_hashed"] = False
-        else:
-            raise TypeError(
-                "admin_password or admin_hashed_password must be set in config.yml"
-            )
-    return new_config
+app = flask.Flask(__name__)
 
 
 def authenticate(username, password):
@@ -115,15 +37,19 @@ def check_short_exist(short):  # Allow to also check against a long link
     return False
 
 
-def check_self_link(long):
-    if get_baseUrl().rstrip("/") in long:
+def linking_to_blocklist(long):
+    # Removes protocol and other parts of the URL to extract the domain name
+    long = long.split("//")[-1].split("/")[0]
+    if long in current_app.config["blocklist"]:
         return True
+    if not current_app.config["selflinks"]:
+        return long in get_baseUrl()
     return False
 
 
 def check_password(password, pass_config):
     if pass_config["password_hashed"]:
-        return bcrypt.checkpw(
+        return checkpw(
             password.encode("utf-8"),
             pass_config["admin_hashed_password"].encode("utf-8"),
         )
@@ -133,11 +59,23 @@ def check_password(password, pass_config):
         raise RuntimeError("This should never occur! Bailing...")
 
 
-def delete_url(deletion):
+def delete_short(deletion):
     result = query_db(
         "SELECT * FROM urls WHERE short = ?", (deletion,), False, None
     )  # Return as tuple instead of row
     get_db().cursor().execute("DELETE FROM urls WHERE short = ?", (deletion,))
+    get_db().commit()
+    return len(result)
+
+
+def delete_long(long):
+    if "//" in long:
+        long = long.split("//")[-1]
+    long = "%" + long + "%"
+    result = query_db(
+        "SELECT * FROM urls WHERE long LIKE ?", (long,), False, None
+    )  # Return as tuple instead of row
+    get_db().cursor().execute("DELETE FROM urls WHERE long LIKE ?", (long,))
     get_db().commit()
     return len(result)
 
@@ -191,23 +129,18 @@ def nested_list_to_dict(l):
 
 
 def response(rq, result, error_msg="Error: Unknown error"):
-    if rq.form.get("api") and not rq.form.get("format") == "json":
-        return "Format type HTML (default) not support for API"  # Future-proof for non-json return types
-    if rq.form.get("format") == "json":
-        # If not result provided OR result doesn't exist, send error
-        # Allows for setting an error message with explicitly checking in regular code
-        if result:
-            if result is True:  # Allows sending with no result (ie. during deletion)
-                return jsonify(success=True)
-            else:
-                return jsonify(success=True, result=result)
+    if rq.form.get("api"):
+        if rq.accept_mimetypes.accept_json:
+            if result:
+                return flask.jsonify(success=bool(result), result=result)
+            return flask.jsonify(success=bool(result), message=error_msg)
         else:
-            return jsonify(success=False, error=error_msg)
+            return "Format type HTML (default) not supported for API"  # Future-proof for non-json return types
     else:
         if result and result is not True:
-            flash(result, "success")
+            flask.flash(result, "success")
         elif not result:
-            flash(error_msg, "error")
+            flask.flash(error_msg, "error")
         return render_template("main.html")
 
 
@@ -281,7 +214,7 @@ app.config["SERVER_NAME"] = app.config["site_domain"]
 
 @app.route("/favicon.ico", subdomain=app.config["subdomain"])
 def favicon():
-    return send_from_directory(
+    return flask.send_from_directory(
         os.path.join(app.root_path, "static"),
         "favicon.ico",
         mimetype="image/vnd.microsoft.icon",
@@ -297,16 +230,49 @@ def main():
 def main_redir(url):
     long = get_long(url)
     if long:
-        resp = make_response(redirect(long, 301))
+        resp = flask.make_response(flask.redirect(long, 301))
     else:
-        flash('Short URL "' + url + "\" doesn't exist", "error")
-        resp = make_response(redirect(url_for("main")))
+        flask.flash('Short URL "' + url + "\" doesn't exist", "error")
+        resp = flask.make_response(flask.redirect(url_for("main")))
     resp.headers.set("Cache-Control", "no-store, must-revalidate")
     return resp
 
 
 @app.route("/", methods=["POST"], subdomain=app.config["subdomain"])
 def main_post():
+    if request.form.get("api"):
+        if current_app.config["disable_api"]:
+            return response(request, None, "API is disabled.")
+        # All API calls require authentication
+        if not request.authorization or not authenticate(
+            request.authorization["username"], request.authorization["password"]
+        ):
+            return response(request, None, "BaiscAuth failed")
+        command = request.form["api"]
+        if command == "list" or command == "listshort":
+            return response(request, list_shortlinks(), "Failed to list items")
+        elif command == "listlong":
+            shortlinks = list_shortlinks()
+            shortlinks = {v: k for k, v in shortlinks.items()}
+            return response(request, shortlinks, "Failed to list items")
+        elif command == "delete":
+            deleted = 0
+            if "long" not in request.form and "short" not in request.form:
+                return response(request, None, "Provide short or long in POST data")
+            if "short" in request.form:
+                deleted = delete_short(request.form["short"]) + deleted
+            if "long" in request.form:
+                deleted = delete_long(request.form["long"]) + deleted
+            if deleted > 0:
+                return response(
+                    request,
+                    "Deleted " + str(deleted) + " URL" + ("s" if deleted > 1 else ""),
+                )
+            else:
+                return response(request, None, "URL not found")
+        else:
+            return response(request, None, "Command " + command + " not found")
+
     if request.form.get("long"):
         if not validate_long(request.form["long"]):
             return response(request, None, "Long URL is not valid")
@@ -328,10 +294,7 @@ def main_post():
         if check_short_exist(short):
             return response(request, None, "Short URL already taken")
         long_exists = check_long_exist(request.form["long"])
-        if (
-            check_self_link(request.form["long"])
-            and not current_app.config["selflinks"]
-        ):
+        if linking_to_blocklist(request.form["long"]):
             return response(request, None, "You cannot link to this site")
         if long_exists and not request.form.get("short"):
             set_latest(request.form["long"])
@@ -346,37 +309,7 @@ def main_post():
         )
         set_latest(request.form["long"])
         get_db().commit()
-
         return response(request, get_baseUrl() + short, "Error: Failed to generate")
-    elif request.form.get("api"):
-        if current_app.config["disable_api"]:
-            return response(request, None, "API is disabled.")
-        # All API calls require authentication
-        if not request.authorization or not authenticate(
-            request.authorization["username"], request.authorization["password"]
-        ):
-            return response(request, None, "BaiscAuth failed")
-        command = request.form["api"]
-        if command == "list" or command == "listshort":
-            return response(request, list_shortlinks(), "Failed to list items")
-        elif command == "listlong":
-            shortlinks = list_shortlinks()
-            shortlinks = {v: k for k, v in shortlinks.items()}
-            return response(request, shortlinks, "Failed to list items")
-        elif command == "delete":
-            deleted = 0
-            if "long" not in request.form and "short" not in request.form:
-                return response(request, None, "Provide short or long in POST data")
-            if "short" in request.form:
-                deleted = delete_url(request.form["short"]) + deleted
-            if "long" in request.form:
-                deleted = delete_url(request.form["long"]) + deleted
-            if deleted > 0:
-                return response(request, "Deleted " + str(deleted) + " URLs")
-            else:
-                return response(request, None, "Failed to delete URL")
-        else:
-            return response(request, None, "Command " + command + " not found")
     else:
         return response(request, None, "Long URL required")
 

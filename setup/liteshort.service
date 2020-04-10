@@ -1,0 +1,9 @@
+[Unit]
+Description=uWSGI instance to serve liteshort
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/uwsgi --ini /etc/liteshort/liteshort.ini
+
+[Install]
+WantedBy=multi-user.target

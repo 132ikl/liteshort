@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="liteshort",
-    version="1.1.0",
+    version="1.2.0",
     author="Steven Spangler",
     author_email="132@ikl.sh",
     description="User-friendly, actually lightweight, and configurable URL shortener",

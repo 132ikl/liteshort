@@ -6,7 +6,7 @@ from appdirs import site_config_dir, user_config_dir
 from pkg_resources import resource_filename
 from yaml import safe_load
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
 
 
@@ -24,7 +24,7 @@ def get_config():
     for path in paths:
         f = path / "config.yml"
         if f.exists():
-            LOGGER.debug(f"Selecting config file {f}")
+            LOGGER.info(f"Selecting config file {f}")
             return open(f, "r")
 
     for path in paths:

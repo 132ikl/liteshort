@@ -1,14 +1,20 @@
+import logging
 import os
 import random
 import sqlite3
 import time
 import urllib
+from pathlib import Path
 
 import flask
+from appdirs import user_data_dir
 from bcrypt import checkpw
 from flask import current_app, g, redirect, render_template, request, url_for
 
 from .config import load_config
+
+logging.basicConfig(level=logging.INFO)
+LOGGER = logging.getLogger(__name__)
 
 app = flask.Flask(__name__)
 
@@ -183,11 +189,27 @@ def validate_long(long):  # https://stackoverflow.com/a/36283503
 # Database connection functions
 
 
+def db_path(name):
+    paths = [
+        Path("/var/lib/liteshort/"),
+        Path(user_data_dir("liteshort", "132ikl")),
+    ]
+    for path in paths:
+        try:
+            path.mkdir(exist_ok=True)
+            db = path / Path(name + ".db")
+            LOGGER.info(f"Selecting database file {db}")
+            return str(db)
+        except (PermissionError, OSError):
+            LOGGER.warn(f"Failed to access database in {path}")
+            LOGGER.debug("", exc_info=True)
+    raise FileNotFoundError("Cannot access database file")
+
+
 def get_db():
     if "db" not in g:
         g.db = sqlite3.connect(
-            "".join((current_app.config["database_name"], ".db")),
-            detect_types=sqlite3.PARSE_DECLTYPES,
+            current_app.config["database"], detect_types=sqlite3.PARSE_DECLTYPES
         )
         g.db.cursor().execute("CREATE TABLE IF NOT EXISTS urls (long,short)")
     return g.db
@@ -208,6 +230,8 @@ def close_db(error):
 
 
 app.config.update(load_config())  # Add YAML config to Flask config
+app.config["database"] = db_path(app.config["database_name"])
+
 app.secret_key = app.config["secret_key"]
 app.config["SERVER_NAME"] = app.config["site_domain"]
 

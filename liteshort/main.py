@@ -135,13 +135,12 @@ def nested_list_to_dict(l):
 
 
 def response(rq, result, error_msg="Error: Unknown error"):
+    if rq.accept_mimetypes.accept_json and not rq.accept_mimetypes.accept_html:
+        if result:
+            return flask.jsonify(success=bool(result), result=result)
+        return flask.jsonify(success=bool(result), message=error_msg)
     if rq.form.get("api"):
-        if rq.accept_mimetypes.accept_json:
-            if result:
-                return flask.jsonify(success=bool(result), result=result)
-            return flask.jsonify(success=bool(result), message=error_msg)
-        else:
-            return "Format type HTML (default) not supported for API"  # Future-proof for non-json return types
+        return "Format type HTML (default) not supported for API"  # Future-proof for non-json return types
     else:
         if result and result is not True:
             flask.flash(result, "success")

@@ -6,65 +6,65 @@ A copy of the MIT license can be obtained at https://mit-license.org/
 */
 
 input {
-  margin: auto;
+    margin: auto;
 }
 
 div.form {
-  margin-top: 5%;
-  text-align: center;
+    margin-top: 5%;
+    text-align: center;
 }
 
 div.success {
-  display: inline-block;
-  font-family: Open Sans;
-  border-radius: 2vh;
-  padding: 2vh;
-  color: #62ad2c;
-  background-color: #E9FFD9;
-  border: 1px solid #62ad2c;
+    display: inline-block;
+    font-family: Open Sans, sans-serif;
+    border-radius: 2vh;
+    padding: 2vh;
+    color: #62ad2c;
+    background-color: #E9FFD9;
+    border: 1px solid #62ad2c;
 }
 
 
 div.error {
-  display: inline-block;
-  font-family: Open Sans;
-  border-radius: 2vh;
-  padding: 2vh;
-  color: #a86464;
-  background-color: #FCE9E9;
-  border: 1px solid #a86464;
+    display: inline-block;
+    font-family: Open Sans, sans-serif;
+    border-radius: 2vh;
+    padding: 2vh;
+    color: #a86464;
+    background-color: #FCE9E9;
+    border: 1px solid #a86464;
 }
 
 body {
-  text-align: center
+    text-align: center
 }
 
 h2 {
-  font-weight: normal;
-  font-family: Open Sans;
+    font-weight: normal;
+    font-family: Open Sans, sans-serif;
 }
 
-div.success > a:link {
-  color: #62ad2c;
+div.success>a:link {
+    color: #62ad2c;
 }
 
-div.success > a:visited {
-  color: #507c52;
+div.success>a:visited {
+    color: #507c52;
 }
 
 div.github {
-  position: absolute;
-  transition: opacity .25s ease-out;
-  -moz-transition: opacity .25s ease-out;
-  -webkit-transition: opacity .25s ease-out;
-  -o-transition: opacity .25s ease-out;
-  opacity: 0.3;
-  right: 2.5vw;
-  bottom: 15vh;
-  width: 50px;
-  height: 10px;
+    position: absolute;
+    transition: opacity .25s ease-out;
+    -moz-transition: opacity .25s ease-out;
+    -webkit-transition: opacity .25s ease-out;
+    -o-transition: opacity .25s ease-out;
+    opacity: 0.3;
+    right: 2.5vw;
+    bottom: 15vh;
+    width: 50px;
+    height: 10px;
 }
 
 div.github:hover {
- opacity: 1; 
+    opacity: 1;
 }

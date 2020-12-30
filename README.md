@@ -1,3 +1,7 @@
+## This project has moved
+
+You can now find liteshort on my [Gitea instance](https://git.ikl.sh/132ikl/liteshort).
+
 # liteshort
 liteshort is a link shortener designed with lightweightness, user and sysadmin-friendliness, privacy, and configurability in mind.
 
